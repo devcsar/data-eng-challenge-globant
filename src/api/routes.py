@@ -3,58 +3,38 @@ import boto3
 import pandas as pd
 from datetime import datetime
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from botocore.exceptions import NoCredentialsError
 from .models import HiredEmployees
 # from .db import astra_db
 from .db import session
+from utils.read_write_ops import ReadWriteOps
+from utils.validations import Validations
 from config import Config
 from dateutil.parser import parse as parse_datetime
 router = APIRouter()
 
-# Inicializa el cliente de S3
-s3_client = boto3.client(
-    's3',
-    aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,
-    region_name=Config.AWS_REGION
-)
+# Inicializa operaciones de escritura y lectura
+rw_ops = ReadWriteOps(Config)
+#Inicializa validaciones
+validations = Validations()
 
-def upload_to_s3(file, bucket_name, object_name=None):
-    if object_name is None:
-        object_name = file.filename
-
-    try:
-        s3_client.upload_fileobj(file.file, bucket_name, object_name)
-    except NoCredentialsError:
-        raise HTTPException(status_code=403, detail="Credentials not available")
-
-def validate_and_clean_data(df):
-    # Eliminar filas con columnas vacías
-    df.dropna(inplace=True)
-    
-    # Asegurarse de que todas las columnas necesarias están presentes
-    required_columns = ['id', 'name', 'datetime', 'department_id', 'job_id']
-    if not all(column in df.columns for column in required_columns):
-        raise ValueError("Missing required columns in the CSV file")
-    
-    return df
 @router.post("/upload_csv/")
 async def upload_csv(file: UploadFile = File(...)):
     object_name = f"uploads/{file.filename}"
+    object_temp_name = f"temp/{file.filename}"
     
     # Sube el archivo a S3
-    upload_to_s3(file, Config.S3_BUCKET_NAME, object_name)
-
+    rw_ops.upload_to_s3(file, object_name)
     # Descarga el archivo desde S3 para procesarlo
     try:
-        s3_client.download_file(Config.S3_BUCKET_NAME, object_name, f"temp/{file.filename}")
-        df = pd.read_csv(f"temp/{file.filename}")
+        # rw_ops.s3_client.download_file(Config.S3_BUCKET_NAME, object_name, f"temp/{file.filename}")
+        rw_ops.download_from_s3(object_name,object_temp_name)
         
-        # Asignar nombres de columnas manualmente
-        df.columns = ['id', 'name', 'datetime', 'department_id', 'job_id']
+        df = pd.read_csv(object_temp_name)
         
-        # Validar y limpiar los datos
-        df = validate_and_clean_data(df)
+        # Validar datos
+        df = validations.assign_column_names(df)        
+        df = validations.drop_empty_rows(df)
+        validations.validate_required_columns(df)
 
         hired_employee_model = HiredEmployees(session)
 
