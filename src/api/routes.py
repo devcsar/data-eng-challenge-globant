@@ -4,10 +4,10 @@ import pandas as pd
 from datetime import datetime
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from botocore.exceptions import NoCredentialsError
-from .models import Department, Job, HiredEmployee
-from .db import astra_client
+from .models import HiredEmployees
+from .db import astra_db
 from config import Config
-
+from dateutil.parser import parse as parse_datetime
 router = APIRouter()
 
 # Inicializa el cliente de S3
@@ -27,6 +27,16 @@ def upload_to_s3(file, bucket_name, object_name=None):
     except NoCredentialsError:
         raise HTTPException(status_code=403, detail="Credentials not available")
 
+def validate_and_clean_data(df):
+    # Eliminar filas con columnas vacías
+    df.dropna(inplace=True)
+    
+    # Asegurarse de que todas las columnas necesarias están presentes
+    required_columns = ['id', 'name', 'datetime', 'department_id', 'job_id']
+    if not all(column in df.columns for column in required_columns):
+        raise ValueError("Missing required columns in the CSV file")
+    
+    return df
 @router.post("/upload_csv/")
 async def upload_csv(file: UploadFile = File(...)):
     object_name = f"uploads/{file.filename}"
@@ -38,18 +48,24 @@ async def upload_csv(file: UploadFile = File(...)):
     try:
         s3_client.download_file(Config.S3_BUCKET_NAME, object_name, f"temp/{file.filename}")
         df = pd.read_csv(f"temp/{file.filename}")
-        department_model = Department(astra_client)
-        job_model = Job(astra_client)
-        hired_employee_model = HiredEmployee(astra_client)
+        
+        # Asignar nombres de columnas manualmente
+        df.columns = ['id', 'name', 'datetime', 'department_id', 'job_id']
+        
+        # Validar y limpiar los datos
+        df = validate_and_clean_data(df)
+
+        hired_employee_model = HiredEmployees(astra_db)
 
         for _, row in df.iterrows():
             hired_employee_model.create(
                 id=row['id'],
                 name=row['name'],
-                datetime=datetime.strptime(row['datetime'], '%Y-%m-%d %H:%M:%S'),
+                datetime=parse_datetime(row['datetime']),
                 department_id=row['department_id'],
                 job_id=row['job_id']
             )
         return {"message": "File successfully processed and data uploaded"}
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))

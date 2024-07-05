@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 class Config:
     ASTRA_DB_ID = os.getenv('ASTRA_DB_ID')
@@ -6,6 +8,7 @@ class Config:
     ASTRA_DB_KEYSPACE = os.getenv('ASTRA_DB_KEYSPACE')
     ASTRA_DB_APPLICATION_TOKEN = os.getenv('ASTRA_DB_APPLICATION_TOKEN')
     ASTRA_DB_ENDPOINT = os.getenv('ASTRA_DB_ENDPOINT')
+    ASTRA_DB_SECURE_CONNECT_BUNDLE = os.getenv('ASTRA_DB_SECURE_CONNECT_BUNDLE')
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_REGION = os.getenv('AWS_REGION')

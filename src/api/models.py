@@ -1,47 +1,53 @@
-from astrapy.client import AstraClient
+from astrapy.database import Database
+from astrapy.collection import Collection
+from astrapy.ids import ObjectId, uuid8, UUID
 from config import Config
 
-class Department:
-    def __init__(self, client: AstraClient):
-        self.collection = client.collections(
-                            namespace=Config.ASTRA_DB_KEYSPACE, 
-                            collection_name='departments'
-                            )
+# class Department:
+#     def __init__(self, client: AstraClient):
+#         self.collection = client.collections(
+#                             namespace=Config.ASTRA_DB_KEYSPACE, 
+#                             collection_name='departments'
+#                             )
 
-    def create(self, id, department):
-        document = {
-            "id": id,
-            "department": department
-        }
-        self.collection.create(document)
+#     def create(self, id, department):
+#         document = {
+#             "id": id,
+#             "department": department
+#         }
+#         self.collection.create(document)
 
-class Job:
-    def __init__(self, client: AstraClient):
-        self.collection = client.collections(
-                            namespace=Config.ASTRA_DB_KEYSPACE, 
-                            collection_name='jobs'
-                            )
+# class Job:
+#     def __init__(self, client: AstraClient):
+#         self.collection = client.collections(
+#                             namespace=Config.ASTRA_DB_KEYSPACE, 
+#                             collection_name='jobs'
+#                             )
 
-    def create(self, id, job):
-        document = {
-            "id": id,
-            "job": job
-        }
-        self.collection.create(document)
+#     def create(self, id, job):
+#         document = {
+#             "id": id,
+#             "job": job
+#         }
+#         self.collection.create(document)
 
-class HiredEmployee:
-    def __init__(self, client: AstraClient):
-        self.collection = client.collections(
-                            namespace=Config.ASTRA_DB_KEYSPACE, 
-                            collection_name='hired_employees'
-                            )
+class HiredEmployees:
+    def __init__(self, db_client: Database):
+        self.collection = db_client.get_collection("hired_employees")
+        
 
     def create(self, id, name, datetime, department_id, job_id):
+        
         document = {
-            "id": id,
+            "id": int(id),
             "name": name,
             "datetime": datetime.isoformat(),
-            "department_id": department_id,
-            "job_id": job_id
+            "department_id": int(department_id),
+            "job_id": int(job_id)
         }
-        self.collection.create(document)
+        print(document)
+
+        self.collection.insert_one(document)
+       
+            
+            

@@ -1,15 +1,27 @@
-from astrapy.client import DataAPIClient
+# from astrapy.client import DataAPIClient
+from cassandra.cluster import Cluster
+from cassandra.auth import PlainTextAuthProvider
 from config import Config
 
-astra_client = DataAPIClient(Config.ASTRA_DB_APPLICATION_TOKEN)
-db = astra_client.get_database_by_api_endpoint(
-                    Config.ASTRA_DB_ENDPOINT,
-                    namespace=Config.ASTRA_DB_KEYSPACE,
-                    )
 
+# astra_db = DataAPIClient(
+#                 Config.ASTRA_DB_APPLICATION_TOKEN
+#                 ).get_database(
+#                     Config.ASTRA_DB_ENDPOINT,
+#                     namespace=Config.ASTRA_DB_KEYSPACE,
+#                     )
 
-# astra_client = DataAPIClient(
-#     astra_database_id=Config.ASTRA_DB_ID,
-#     astra_database_region=Config.ASTRA_DB_REGION,
-#     astra_application_token=Config.ASTRA_DB_APPLICATION_TOKEN
-# )
+def get_cluster():
+    cloud_config = {
+        'secure_connect_bundle': Config.ASTRA_DB_SECURE_CONNECT_BUNDLE
+    }
+    auth_provider = PlainTextAuthProvider(Config.ASTRA_DB_APPLICATION_TOKEN, Config.ASTRA_DB_APPLICATION_TOKEN)
+    cluster = Cluster(cloud=cloud_config, auth_provider=auth_provider)
+    return cluster
+
+def get_session():
+    cluster = get_cluster()
+    session = cluster.connect(Config.ASTRA_DB_KEYSPACE)
+    return session
+
+session = get_session()
