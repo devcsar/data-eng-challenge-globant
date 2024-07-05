@@ -15,7 +15,7 @@ def get_cluster():
     cloud_config = {
         'secure_connect_bundle': Config.ASTRA_DB_SECURE_CONNECT_BUNDLE
     }
-    auth_provider = PlainTextAuthProvider(Config.ASTRA_DB_APPLICATION_TOKEN, Config.ASTRA_DB_APPLICATION_TOKEN)
+    auth_provider = PlainTextAuthProvider(Config.ASTRA_DB_CLIENT_ID, Config.ASTRA_DB_SECRET)
     cluster = Cluster(cloud=cloud_config, auth_provider=auth_provider)
     return cluster
 

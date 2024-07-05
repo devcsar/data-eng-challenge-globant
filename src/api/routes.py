@@ -5,7 +5,8 @@ from datetime import datetime
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from botocore.exceptions import NoCredentialsError
 from .models import HiredEmployees
-from .db import astra_db
+# from .db import astra_db
+from .db import session
 from config import Config
 from dateutil.parser import parse as parse_datetime
 router = APIRouter()
@@ -55,15 +56,15 @@ async def upload_csv(file: UploadFile = File(...)):
         # Validar y limpiar los datos
         df = validate_and_clean_data(df)
 
-        hired_employee_model = HiredEmployees(astra_db)
+        hired_employee_model = HiredEmployees(session)
 
         for _, row in df.iterrows():
             hired_employee_model.create(
-                id=row['id'],
+                id=int(row['id']),
                 name=row['name'],
                 datetime=parse_datetime(row['datetime']),
-                department_id=row['department_id'],
-                job_id=row['job_id']
+                department_id=int(row['department_id']),
+                job_id=int((row['job_id']))
             )
         return {"message": "File successfully processed and data uploaded"}
     except Exception as e:
