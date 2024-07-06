@@ -20,5 +20,5 @@ CREATE TABLE hired_employees (
     datetime TIMESTAMP,
     department_id INT,
     job_id INT,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, datetime)
 ) WITH CLUSTERING ORDER BY (datetime DESC);

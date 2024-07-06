@@ -29,9 +29,11 @@ class HiredEmployees:
 
     def create(self, id, name, datetime, department_id, job_id):
         query = SimpleStatement(f"""
-        INSERT INTO {Config.ASTRA_DB_KEYSPACE}.hired_employees (id, name, datetime, department_id, job_id)
-        VALUES (%s, %s, %s, %s, %s)
-        """)
+                                INSERT INTO {Config.ASTRA_DB_KEYSPACE}.hired_employees 
+                                    (id, name, datetime, department_id, job_id)
+                                VALUES 
+                                    (%s, %s, %s, %s, %s);
+                                """)
         self.session.execute(query, (id, name, datetime, department_id, job_id))       
             
             

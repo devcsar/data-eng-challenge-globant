@@ -1,4 +1,7 @@
 import pandas as pd
+from fastapi import APIRouter, UploadFile, File, HTTPException
+
+
 
 class Validations:
     def drop_empty_rows(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -27,3 +30,9 @@ class Validations:
         
         df.columns = column_names
         return df
+    
+    def is_csv(self, file: File) -> None:
+        if not file.filename.endswith('.csv'):
+            raise HTTPException(status_code=400, 
+                                detail="El archivo debe tener la extensión .csv")
+    

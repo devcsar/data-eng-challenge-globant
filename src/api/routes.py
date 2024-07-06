@@ -1,7 +1,7 @@
-import os
-import boto3
+
+from io import TextIOWrapper
+import csv
 import pandas as pd
-from datetime import datetime
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from .models import HiredEmployees
 # from .db import astra_db
@@ -21,6 +21,22 @@ validations = Validations()
 async def upload_csv(file: UploadFile = File(...)):
     object_name = f"uploads/{file.filename}"
     object_temp_name = f"temp/{file.filename}"
+    # Validar la extensión del archivo
+    validations.is_csv(file)
+    # Inicializa el contador de filas
+    row_count = 0
+    # Procesa el archivo CSV en fragmentos
+    file_content = TextIOWrapper(file.file, encoding='utf-8')
+    reader = csv.reader(file_content)
+    # Valida el número de filas
+    rows = []
+    for row in reader:
+        
+        row_count += 1
+        if row_count > 1000:
+            raise HTTPException(status_code=400, detail="El archivo CSV excede el límite de 1000 filas")
+        rows.append(row)
+
     
     # Sube el archivo a S3
     rw_ops.upload_to_s3(file, object_name)
