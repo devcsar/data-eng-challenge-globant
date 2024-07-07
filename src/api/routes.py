@@ -1,5 +1,5 @@
 
-from io import TextIOWrapper
+from io import TextIOWrapper, StringIO
 import csv
 import pandas as pd
 from fastapi import APIRouter, UploadFile, File, HTTPException
@@ -23,21 +23,12 @@ async def upload_csv(file: UploadFile = File(...)):
     object_temp_name = f"temp/{file.filename}"
     # Validar la extensión del archivo
     validations.is_csv(file)
-    # Inicializa el contador de filas
-    row_count = 0
-    # Procesa el archivo CSV en fragmentos
-    file_content = TextIOWrapper(file.file, encoding='utf-8')
-    reader = csv.reader(file_content)
-    # Valida el número de filas
-    rows = []
-    for row in reader:
-        
-        row_count += 1
-        if row_count > 1000:
-            raise HTTPException(status_code=400, detail="El archivo CSV excede el límite de 1000 filas")
-        rows.append(row)
-
     
+    #Validar filas por chunks (streamIO)
+    csv_file_data = ReadWriteOps.read_stream_chunks(file)
+    
+    
+
     # Sube el archivo a S3
     rw_ops.upload_to_s3(file, object_name)
     # Descarga el archivo desde S3 para procesarlo

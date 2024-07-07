@@ -36,3 +36,9 @@ class Validations:
             raise HTTPException(status_code=400, 
                                 detail="El archivo debe tener la extensión .csv")
     
+    def max_rows_count(rows: list, max_rows: int) -> None:
+        if len(rows) > max_rows:
+                    raise HTTPException(status_code=400, detail="El archivo contiene más de 1000 filas.")
+        
+        
+    
