@@ -9,7 +9,7 @@ from .validations import Validations
 
 
 class ReadWriteOps:
-    def __init__(self, s3_client: client):
+    def __init__(self,config, s3_client: client):
         self.config = config
         self.s3_client =s3_client
 

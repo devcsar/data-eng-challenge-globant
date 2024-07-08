@@ -17,11 +17,11 @@ from pipelines.api_pipelines import APIPipelines
 router = APIRouter()
 
 # Inicializa operaciones de escritura y lectura
-rw_ops = ReadWriteOps(Config)
+# rw_ops = ReadWriteOps(Config)
 #Inicializa validaciones
 validations = Validations()
 
-# api_pipeline = APIPipelines()
+api_pipeline = APIPipelines()
 # stat_pipeline = StatsPipelines()
 
 
@@ -32,12 +32,15 @@ async def upload_csv(file: UploadFile = File(...)):
     object_name = f"uploads/{file.filename}"
     object_temp_name = f"temp/{file.filename}"
     # Validar la extensión del archivo
-    validations.is_csv(file)
+    # validations.is_csv(file)
+    pipeline_succeed, pipeline_message = await api_pipeline.ingest_hired_employes_csv(file)
     
     #Validar filas por chunks (streamIO)
-    csv_file_data =  await rw_ops.read_stream_chunks(file)
+    # csv_file_data =  await rw_ops.read_stream_chunks(file)
+    
+    
     # Sube el archivo a S3
-    rw_ops.upload_to_s3(file, object_name)
+    # rw_ops.upload_to_s3(file, object_name)
     # Descarga el archivo desde S3 para procesarlo
     try:
         # rw_ops.s3_client.download_file(Config.S3_BUCKET_NAME, object_name, f"temp/{file.filename}")
