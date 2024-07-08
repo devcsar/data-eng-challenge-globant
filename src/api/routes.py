@@ -10,6 +10,10 @@ from utils.read_write_ops import ReadWriteOps
 from utils.validations import Validations
 from config import Config
 from dateutil.parser import parse as parse_datetime
+from pipelines.api_pipelines import APIPipelines
+# from pipelines.stats_pipelines import StatsPipelines
+
+
 router = APIRouter()
 
 # Inicializa operaciones de escritura y lectura
@@ -17,18 +21,21 @@ rw_ops = ReadWriteOps(Config)
 #Inicializa validaciones
 validations = Validations()
 
+# api_pipeline = APIPipelines()
+# stat_pipeline = StatsPipelines()
+
+
 @router.post("/upload_csv/")
 async def upload_csv(file: UploadFile = File(...)):
+    
+    
     object_name = f"uploads/{file.filename}"
     object_temp_name = f"temp/{file.filename}"
     # Validar la extensión del archivo
     validations.is_csv(file)
     
     #Validar filas por chunks (streamIO)
-    csv_file_data = ReadWriteOps.read_stream_chunks(file)
-    
-    
-
+    csv_file_data =  await rw_ops.read_stream_chunks(file)
     # Sube el archivo a S3
     rw_ops.upload_to_s3(file, object_name)
     # Descarga el archivo desde S3 para procesarlo
