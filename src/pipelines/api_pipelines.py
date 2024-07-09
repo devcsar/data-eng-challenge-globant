@@ -32,7 +32,8 @@ class APIPipelines:
         
         
     async def ingest_hired_employes_csv(self, file: File) -> Tuple[bool, str]:
-                
-        self.validations.is_csv(file)
+        
+        if not self.validations.is_csv(file):
+            return ''
         
         csv_file_data =  await self.rw_ops.read_stream_chunks(file)
