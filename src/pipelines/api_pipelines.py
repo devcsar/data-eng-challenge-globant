@@ -6,6 +6,8 @@ from utils.transformations import Transformations
 from api.models import HiredEmployees
 from api.db import session
 from fastapi import File, HTTPException
+from typing import List, Tuple, Dict, Union, Any
+
 import boto3
 
 
@@ -34,8 +36,8 @@ class APIPipelines:
 
         
         
-    async def ingest_hired_employes_csv(self, file: File):
-        # file = self.file
-        
+    async def ingest_hired_employes_csv(self, file: File) -> Tuple[bool, str]:
+                
         self.validations.is_csv(file)
+        
         csv_file_data =  await self.rw_ops.read_stream_chunks(file)

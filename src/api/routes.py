@@ -28,12 +28,15 @@ api_pipeline = APIPipelines()
 @router.post("/upload_csv/")
 async def upload_csv(file: UploadFile = File(...)):
     
-    
-    object_name = f"uploads/{file.filename}"
-    object_temp_name = f"temp/{file.filename}"
-    # Validar la extensión del archivo
-    # validations.is_csv(file)
-    pipeline_succeed, pipeline_message = await api_pipeline.ingest_hired_employes_csv(file)
+    try:
+        pipeline_succeed, pipeline_message = \
+            await api_pipeline.ingest_hired_employes_csv(file)
+        if pipeline_succeed == True:
+            return pipeline_message
+        elif pipeline_succeed == False:
+            raise HTTPException(status_code=404, detail=pipeline_message)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
     #Validar filas por chunks (streamIO)
     # csv_file_data =  await rw_ops.read_stream_chunks(file)

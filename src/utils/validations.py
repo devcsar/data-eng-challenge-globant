@@ -31,7 +31,8 @@ class Validations:
         df.columns = column_names
         return df
     
-    def is_csv(self, file: File) -> None:
+    def is_csv(self, file: File) -> bool:
+        validation_pass = None
         if not file.filename.endswith('.csv'):
             raise HTTPException(status_code=400, 
                                 detail="El archivo debe tener la extensión .csv")
