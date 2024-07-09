@@ -7,16 +7,11 @@ from api.models import HiredEmployees
 from api.db import session
 from fastapi import File, HTTPException
 from typing import List, Tuple, Dict, Union, Any
-
 import boto3
-
-
-
 class APIPipelines:
     
     def __init__(self):
         
-        # self.file = file
         self.http_exception = HTTPException
         self.validations = Validations()
         
