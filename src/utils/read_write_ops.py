@@ -32,15 +32,15 @@ class ReadWriteOps:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
-    async def read_stream_chunks(self, upload_file: File) -> pd.DataFrame:
+    async def read_stream_chunks(self, 
+                            upload_file: File,
+                            rows_limit: int, 
+                            chunk_size: int
+                            ) -> tuple[bool, pd.DataFrame]:
         
-        # Limitar el tamaño máximo de las primeras 100 filas
-        max_rows = self.config.ROWS_LIMIT
         rows = []
         reader = None
-
-        # Definir el tamaño del chunk (por ejemplo, 1024 bytes)
-        chunk_size = self.config.STREAM_FILE_CHUNKS_SIZE_KB
+        validation = None
         
         # Procesar el archivo en partes mientras se sube
         while True:
@@ -57,13 +57,14 @@ class ReadWriteOps:
             
             for row in reader:
                 rows.append(row)
-                Validations.max_rows_count(rows,self.config.ROWS_LIMIT)
+                if not Validations.max_rows_count(rows,self.config.ROWS_LIMIT):
+                    return (False,rows)
 
-            if len(rows) >= max_rows:
+            if len(rows) >= rows_limit:
                 break
 
         # Convertir las filas a un DataFrame de pandas
-        df = pd.DataFrame(rows[:max_rows])
+        df = pd.DataFrame(rows[:rows_limit])
         
-        return df
+        return (True,df)
         

@@ -26,14 +26,48 @@ class APIPipelines:
         self.S3_REJECTED_DATA_DESTINATION = Config.S3_REJECTED_DATA_DESTINATION
         self.rw_ops = ReadWriteOps(Config,self.s3_client)
         self.session = session
-        self.ENABLE_RAW_DATA = Config.ENABLE_RAW_DATA
+        self.ENABLE_RAW_DATA = bool(Config.ENABLE_RAW_DATA)
         self.STREAM_FILE_CHUNKS_SIZE_KB = Config.STREAM_FILE_CHUNKS_SIZE_KB
+        self.ROWS_LIMIT = Config.ROWS_LIMIT
 
         
         
     async def ingest_hired_employes_csv(self, file: File) -> Tuple[bool, str]:
+        '''
+            Run sequential operations to process hired_employes csv
+        '''
+        validation = None
         
-        if not self.validations.is_csv(file):
-            return ''
+        # validate if selected file have .csv extension
+        validation = self.validations.is_csv(file)
+        if not validation:
+            return (validation, 'The file must have .CSV extension')   
         
-        csv_file_data =  await self.rw_ops.read_stream_chunks(file)
+        # While upload streaming validate if file exceeds the row limit
+        # define by ROWS_LIMIT env variable
+        validation, csv_data =  await self.rw_ops. \
+                            read_stream_chunks(file,
+                                            self.ROWS_LIMIT, 
+                                            self.STREAM_FILE_CHUNKS_SIZE_KB
+                                            )
+        if not validation:
+            return (validation, 'The selected file exceeds the rows limit. (1000)')
+        
+        # validate if file have a header
+        # validate if header is valid with column names of 
+        # -- hired_employees model: id, name, datetime, department_id, job_id
+        # pending -- if file have a header read ROWS_LIMIT +1 to take into account header
+        # clean csv data (delete rows with empty columns)
+        # validate rows with expected_types = [int, datetime, int, int]
+        # create a file with rejected rows with extra column called_rejected-reason 
+        # -- y guardarlo en S3_REJECTED_DATA_DESTINATION
+        # if ENABLE_RAW_DATA is true then store a copy of the file clean in csv format in the
+        # -- S3_RAW_DATA_DESTINATION
+        # Process dataframe to store each row in Astra table, but taking into account the next validations: 
+        # -- validate if id is unique (query table to find)
+        # -- validate if department_id exist in departments table
+        # -- validate if job_id exist in jobs table
+        # -- once validated all above store row in astra table
+        # return message to endpoint in routes
+
+        

@@ -1,9 +1,12 @@
 import pandas as pd
 from fastapi import APIRouter, UploadFile, File, HTTPException
+import pandas as pd
 
 
 
 class Validations:
+    def __init__(self):
+        self.pd = pd
     
 
     def validate_required_columns(self, df: pd.DataFrame) -> bool:
@@ -16,18 +19,15 @@ class Validations:
 
 
     def is_csv(self, file: File) -> bool:
-        if not file.filename.endswith('.csv'):
-            return False
-        else:
-            return True
-            
-            
-            raise HTTPException(status_code=400, 
-                                detail="El archivo debe tener la extensión .csv")
+        return file.filename.endswith('.csv')
     
     def max_rows_count(rows: list, max_rows: int) -> bool:
-        if len(rows) > max_rows:
-                    raise HTTPException(status_code=400, detail="El archivo contiene más de 1000 filas.")
+        return len(rows) > max_rows 
+        
+                
+    # def have_header(self,)
+    
+    # def header_is_valid(self,)
         
         
     
