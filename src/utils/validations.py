@@ -25,9 +25,14 @@ class Validations:
         return len(rows) > max_rows 
         
                 
-    # def have_header(self,)
+    def have_header(self,csv_data: pd.DataFrame) -> tuple[bool, list]:
+        validation= True
+        columns = []
+        return (validation, columns)
     
-    # def header_is_valid(self,)
+    def header_is_valid(self,column_names: list) -> bool:
+        validation = None
+        return validation
         
         
     

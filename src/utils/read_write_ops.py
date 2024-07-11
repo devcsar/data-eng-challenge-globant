@@ -1,11 +1,15 @@
 
 from boto3 import client
 import pandas as pd
+from api.models import HiredEmployees
 from botocore.exceptions import NoCredentialsError
 from fastapi import File, HTTPException
 import csv
 from io import StringIO
 from .validations import Validations
+from dateutil.parser import parse as parse_datetime
+from cassandra.cluster import Session
+
 
 
 class ReadWriteOps:
@@ -37,12 +41,13 @@ class ReadWriteOps:
                             rows_limit: int, 
                             chunk_size: int
                             ) -> tuple[bool, pd.DataFrame]:
+        '''
+        Process file in chunks while is uploading
+        '''
         
         rows = []
-        reader = None
-        validation = None
+        reader = None        
         
-        # Procesar el archivo en partes mientras se sube
         while True:
             chunk = await upload_file.read(chunk_size)
             if not chunk:
@@ -67,4 +72,20 @@ class ReadWriteOps:
         df = pd.DataFrame(rows[:rows_limit])
         
         return (True,df)
+
+    def write_rows_db(self, session: Session, data: pd.DataFrame) -> tuple[bool, pd.DataFrame]:
+        
+        hired_employee_model = HiredEmployees(session)
+        
+
+        for _, row in data.iterrows():
+            hired_employee_model.create(
+                id=int(row['id']),
+                name=row['name'],
+                datetime=parse_datetime(row['datetime']),
+                department_id=int(row['department_id']),
+                job_id=int((row['job_id']))
+            )
+        return ('File successfully processed and data uploaded', data)
+        
         

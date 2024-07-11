@@ -1,28 +1,14 @@
 
-from io import TextIOWrapper, StringIO
-import csv
-import pandas as pd
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from .models import HiredEmployees
 # from .db import astra_db
 from .db import session
-from utils.read_write_ops import ReadWriteOps
-from utils.validations import Validations
-from config import Config
-from dateutil.parser import parse as parse_datetime
 from pipelines.api_pipelines import APIPipelines
-# from pipelines.stats_pipelines import StatsPipelines
-
+from pipelines.stats_pipelines import StatsPipelines
 
 router = APIRouter()
 
-# Inicializa operaciones de escritura y lectura
-# rw_ops = ReadWriteOps(Config)
-#Inicializa validaciones
-validations = Validations()
-
-api_pipeline = APIPipelines()
-# stat_pipeline = StatsPipelines()
+api_pipelines = APIPipelines()
+stats_pipelines = StatsPipelines()
 
 
 @router.post("/upload_csv/")
@@ -30,9 +16,9 @@ async def upload_csv(file: UploadFile = File(...)):
     
     try:
         pipeline_succeed, pipeline_message = \
-            await api_pipeline.ingest_hired_employes_csv(file)
+            await api_pipelines.ingest_hired_employes_csv(session,file)
         if not pipeline_succeed:
-            raise HTTPException(status_code=404, detail=pipeline_message)
+            raise HTTPException(status_code=400, detail=pipeline_message)
         return pipeline_message
     except HTTPException as http_exp:
         raise http_exp
