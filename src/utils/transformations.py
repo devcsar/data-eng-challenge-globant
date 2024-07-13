@@ -1,5 +1,4 @@
 
-import os
 import pandas as pd
 
 class Transformations:
@@ -10,10 +9,11 @@ class Transformations:
         df.dropna(inplace=True)
         return df
     
-    def assign_column_names(self,column_names: list, df: pd.DataFrame) -> pd.DataFrame:
+    def assign_column_names(
+        self,column_names: list, df: pd.DataFrame) -> pd.DataFrame:
 
         if len(df.columns) != len(column_names):
-            raise ValueError("The number of columns in the DataFrame does not match the number of column names provided")
+            raise ValueError("Not valid column names in file")
         
         df.columns = column_names
         return df
