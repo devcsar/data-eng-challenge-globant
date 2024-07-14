@@ -44,7 +44,7 @@ class ReadWriteOps:
 
     async def read_stream_chunks(
         self, upload_file: File, rows_limit: int, chunk_size: int
-    ) -> tuple[bool, pd.DataFrame]:
+    ) -> tuple[bool, list]:
         """
         Process file in chunks while is uploading
         """
@@ -77,9 +77,9 @@ class ReadWriteOps:
                 break
 
         # Convertir las filas a un DataFrame de pandas
-        df = pd.DataFrame(rows[:rows_limit])
+        # df = pd.DataFrame(rows[:rows_limit])
 
-        return (True, df)
+        return (True, rows)
 
     def write_rows_db(
         self, session: Session, data: pd.DataFrame
