@@ -33,8 +33,8 @@ class Job:
 
 
 class HiredEmployees:
-    column_names = ["id", "nombre", "fecha_registro"]
-    column_types = ["int", "str", "datetime"]
+    column_names = ["id", "name", "datetime", "department_id", "job_id"]
+    column_types = ["int", "str", "datetime", "int", "int"]
     schema = zip(column_names, column_types)
 
     def __init__(self, session: Session):

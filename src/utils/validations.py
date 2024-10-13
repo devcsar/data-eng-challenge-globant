@@ -1,5 +1,6 @@
 import pandas as pd
 from fastapi import File
+from api import models
 
 
 class Validations:

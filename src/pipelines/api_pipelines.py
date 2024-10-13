@@ -59,7 +59,7 @@ class APIPipelines:
 
         # validate if header is valid with column names of
         # -- hired_employees model: id, name, datetime, department_id, job_id
-        validation = self.validations.header_is_valid(column_names)
+        valid_header = self.validations.header_is_valid(column_names)
         
         # if not validation:
             
